@@ -73,6 +73,8 @@ public:
     void markNearbySafe ();
     void markNearbyDanger ();
     std::set<Direction> getValidDirections ();
+    void adjustDirectionAndMove (Direction direction);
+    void moveBack ();
     
     
     // ======================================================================

@@ -77,11 +77,11 @@ Agent::Action MyAI::getAction
     if (scream) {
         wumpusAlive = false;
     }
-    // POSSIBLE action queue check here
     if (glitter) {
         withGold = true;
         return GRAB;
     }
+    // action queue check here, handle incomplete movements
     if (withGold) {
         //go back
     }
@@ -95,7 +95,11 @@ Agent::Action MyAI::getAction
     }
     auto avaliableMoves = getValidDirections();
     if (!avaliableMoves.empty()) {
-        //move, push in the queue
+        if (avaliableMoves.find(currentDirection) != avaliableMoves.end()) {
+            adjustDirectionAndMove(currentDirection);
+        } else {
+            adjustDirectionAndMove(*avaliableMoves.begin());
+        }
     } else {
         //get back
     }
@@ -199,6 +203,51 @@ std::set<MyAI::Direction> MyAI::getValidDirections() {
         result.insert(DOWN);
     }
     return result;
+}
+
+void MyAI::adjustDirectionAndMove(Direction direction) {
+    if (currentDirection == RIGHT) {
+        if (direction == UP) {
+            actionsTodo.push(TURN_LEFT);
+        } else if (direction == DOWN) {
+            actionsTodo.push(TURN_RIGHT);
+        } else if (direction == LEFT) {
+            actionsTodo.push(TURN_RIGHT);
+            actionsTodo.push(TURN_RIGHT);
+        }
+    } else if (currentDirection == UP) {
+        if (direction == LEFT) {
+            actionsTodo.push(TURN_LEFT);
+        } else if (direction == RIGHT) {
+            actionsTodo.push(TURN_RIGHT);
+        } else if (direction == DOWN) {
+            actionsTodo.push(TURN_RIGHT);
+            actionsTodo.push(TURN_RIGHT);
+        }
+    } else if (currentDirection == LEFT) {
+        if (direction == DOWN) {
+            actionsTodo.push(TURN_LEFT);
+        } else if (direction == UP) {
+            actionsTodo.push(TURN_RIGHT);
+        } else if (direction == RIGHT) {
+            actionsTodo.push(TURN_RIGHT);
+            actionsTodo.push(TURN_RIGHT);
+        }
+    } else {
+        if (direction == RIGHT) {
+            actionsTodo.push(TURN_LEFT);
+        } else if (direction == LEFT) {
+            actionsTodo.push(TURN_RIGHT);
+        } else if (direction == UP) {
+            actionsTodo.push(TURN_RIGHT);
+            actionsTodo.push(TURN_RIGHT);
+        }
+    }
+    actionsTodo.push(FORWARD);
+}
+
+void MyAI::moveBack() {
+    
 }
 // ======================================================================
 // YOUR CODE ENDS
