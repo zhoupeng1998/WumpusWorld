@@ -84,5 +84,6 @@ public:
 };
 
 class BackupCoordinateException {};
+class MeetBoundException {};
 
 #endif

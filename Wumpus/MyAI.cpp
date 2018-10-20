@@ -30,15 +30,11 @@ MyAI::MyAI() : Agent()
     wumpusAlive = true;
     lastAction = CLIMB;
     currentDirection = RIGHT;
-    /*
-    actionsTodo.push(FORWARD);
-    actionsTodo.push(FORWARD);
-    actionsTodo.push(TURN_RIGHT);
-    actionsTodo.push(TURN_RIGHT);
-    actionsTodo.push(FORWARD);
-    actionsTodo.push(FORWARD);
-    */
-    actionsTodo.push(CLIMB);
+    currentPosition = std::make_pair(1, 1);
+    safe.insert(currentPosition);
+    path.push(currentPosition);
+    visited.insert(currentPosition);
+
     // ======================================================================
     // YOUR CODE ENDS
     // ======================================================================
@@ -64,14 +60,20 @@ Agent::Action MyAI::getAction
         } else if (currentDirection == UP) {
             ybound = currentPosition.second;
         } else {
-            std::cerr << "*****************WARNING*****************" << std::endl;
-            std::cerr << "My program was not designed like this!!!" << std::endl;
-            std::cerr << "*****************************************" << std::endl;
+            throw MeetBoundException();
         }
+    } else if (lastAction == FORWARD) {
+        auto newPosition = getNextCoordinate(currentPosition, currentDirection);
+        if (path.top() != newPosition) {
+            visited.insert(newPosition);
+            path.push(newPosition);
+        }
+        currentPosition = newPosition;
     }
     
     // shoot wumpus
     if (isFacingWumpus()) {
+        lastAction = SHOOT;
         return SHOOT;
     }
     if (scream) {
@@ -79,11 +81,14 @@ Agent::Action MyAI::getAction
     }
     if (glitter) {
         withGold = true;
+        lastAction = GRAB;
         return GRAB;
     }
-    // action queue check here, handle incomplete movements
-    if (withGold) {
-        //go back
+    if (!actionsTodo.empty()) {
+        auto move = actionsTodo.front();
+        actionsTodo.pop();
+        lastAction = move;
+        return move;
     }
     if (!breeze && !(wumpusAlive && stench)) {
         markNearbySafe();
@@ -93,19 +98,28 @@ Agent::Action MyAI::getAction
         }
         markNearbyDanger();
     }
-    auto avaliableMoves = getValidDirections();
-    if (!avaliableMoves.empty()) {
-        if (avaliableMoves.find(currentDirection) != avaliableMoves.end()) {
-            adjustDirectionAndMove(currentDirection);
-        } else {
-            adjustDirectionAndMove(*avaliableMoves.begin());
-        }
+    if (withGold) {
+        moveBack();
     } else {
-        //get back
+        auto avaliableMoves = getValidDirections();
+        if (!avaliableMoves.empty()) {
+            if (avaliableMoves.find(currentDirection) != avaliableMoves.end()) {
+                adjustDirectionAndMove(currentDirection);
+            } else {
+                auto nextDirection = *avaliableMoves.begin();
+                adjustDirectionAndMove(nextDirection);
+                currentDirection = nextDirection;
+                //currentDirection = *avaliableMoves.begin();
+                //adjustDirectionAndMove(currentDirection);
+            }
+        } else {
+            moveBack();
+        }
     }
     if (!actionsTodo.empty()) {
         auto move = actionsTodo.front();
         actionsTodo.pop();
+        lastAction = move;
         return move;
     }
     return CLIMB;

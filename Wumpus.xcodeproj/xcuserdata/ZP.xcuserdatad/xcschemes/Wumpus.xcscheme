@@ -63,7 +63,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-dm"
+            argument = "-d"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/ZP/Desktop/world.txt"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
