@@ -75,11 +75,14 @@ public:
     std::set<Direction> getValidDirections ();
     void adjustDirectionAndMove (Direction direction);
     void moveBack ();
+    Direction getDirectionToTargetPosition(std::pair<int, int>& target);
     
     
     // ======================================================================
     // YOUR CODE ENDS
     // ======================================================================
 };
+
+class BackupCoordinateException {};
 
 #endif

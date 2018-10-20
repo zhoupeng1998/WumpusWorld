@@ -247,7 +247,29 @@ void MyAI::adjustDirectionAndMove(Direction direction) {
 }
 
 void MyAI::moveBack() {
-    
+    path.pop();
+    if (path.empty()) {
+        actionsTodo.push(CLIMB);
+    } else {
+        adjustDirectionAndMove(getDirectionToTargetPosition(path.top()));
+    }
+}
+
+MyAI::Direction MyAI::getDirectionToTargetPosition(std::pair<int, int> &target) {
+    int xdiff = target.first - currentPosition.first,
+        ydiff = target.second - currentPosition.second;
+    if ((xdiff && ydiff) || (!xdiff && !ydiff)) {
+        throw BackupCoordinateException();
+    }
+    if (xdiff > 0) {
+        return RIGHT;
+    } else if (xdiff < 0) {
+        return LEFT;
+    } else if (ydiff > 0) {
+        return UP;
+    } else {
+        return DOWN;
+    }
 }
 // ======================================================================
 // YOUR CODE ENDS
