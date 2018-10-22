@@ -257,6 +257,7 @@ void MyAI::adjustDirectionAndMove(Direction direction) {
             actionsTodo.push(TURN_RIGHT);
         }
     }
+    currentDirection = direction;
     actionsTodo.push(FORWARD);
 }
 
@@ -288,3 +289,4 @@ MyAI::Direction MyAI::getDirectionToTargetPosition(std::pair<int, int> &target) 
 // ======================================================================
 // YOUR CODE ENDS
 // ======================================================================
+///Users/ZP/Desktop/world.txt
