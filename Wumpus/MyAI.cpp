@@ -72,7 +72,7 @@ Agent::Action MyAI::getAction
     }
     
     // shoot wumpus
-    if (isFacingWumpus()) {
+    if (!withGold && isFacingWumpus()) {
         lastAction = SHOOT;
         return SHOOT;
     }
@@ -101,7 +101,7 @@ Agent::Action MyAI::getAction
     if (withGold) {
         moveBack();
     } else {
-        auto avaliableMoves = getValidDirections();
+        auto avaliableMoves = getValidDirections(currentPosition);
         if (!avaliableMoves.empty()) {
             if (avaliableMoves.find(currentDirection) != avaliableMoves.end()) {
                 adjustDirectionAndMove(currentDirection);
@@ -180,41 +180,49 @@ bool MyAI::isFacingWumpus() {
     return false;
 }
 
+void MyAI::getWumpusPosition() {
+    if (stench.size() == 2) {
+        int xdiff = stench.begin()->first - stench.rbegin()->first,
+            ydiff = stench.begin()->second - stench.rbegin()->second;
+        if (xdiff == 2 || xdiff == -2) {
+            wumpusPosition.first = (stench.begin()->first + stench.rbegin()->first) / 2;
+            wumpusPosition.second = stench.begin()->second;
+        } else if (ydiff == 2 || ydiff == -2) {
+            wumpusPosition.first = stench.begin()->first;
+            wumpusPosition.first = (stench.begin()->second + stench.rbegin()->second) / 2;
+        }
+    } else {
+        for (auto coord : stench) {
+            auto safeDirections = getValidDirections(coord);
+            for (auto direction : allDirections) {
+                if (safeDirections.find(direction) == safeDirections.end()) {
+                    wumpusPosition = getNextCoordinate(coord, direction);
+                }
+            }
+        }
+    }
+}
+
 void MyAI::markNearbySafe() {
-    safe.insert(getNextCoordinate(currentPosition, RIGHT));
-    safe.insert(getNextCoordinate(currentPosition, LEFT));
-    safe.insert(getNextCoordinate(currentPosition, UP));
-    safe.insert(getNextCoordinate(currentPosition, DOWN));
+    for (auto direction : allDirections) {
+        safe.insert(getNextCoordinate(currentPosition, direction));
+    }
 }
 
 void MyAI::markNearbyDanger() {
-    danger.insert(getNextCoordinate(currentPosition, RIGHT));
-    danger.insert(getNextCoordinate(currentPosition, LEFT));
-    danger.insert(getNextCoordinate(currentPosition, UP));
-    danger.insert(getNextCoordinate(currentPosition, DOWN));
+    for (auto direction : allDirections) {
+        danger.insert(getNextCoordinate(currentPosition, direction));
+    }
 }
 
-std::set<MyAI::Direction> MyAI::getValidDirections() {
+std::set<MyAI::Direction> MyAI::getValidDirections(std::pair<int, int>& position) {
     std::set<MyAI::Direction> result;
-    auto rightCoord = getNextCoordinate(currentPosition, RIGHT),
-        upCoord = getNextCoordinate(currentPosition, UP),
-        leftCoord = getNextCoordinate(currentPosition, LEFT),
-        downCoord = getNextCoordinate(currentPosition, DOWN);
-    if (!coordinateIsOutOfBound(rightCoord) && (safe.find(rightCoord) != safe.end() ||
-        danger.find(rightCoord) == danger.end()) && visited.find(rightCoord) == visited.end()) {
-        result.insert(RIGHT);
-    }
-    if (!coordinateIsOutOfBound(upCoord) && (safe.find(upCoord) != safe.end() ||
-        danger.find(upCoord) == danger.end()) && visited.find(upCoord) == visited.end()) {
-        result.insert(UP);
-    }
-    if (!coordinateIsOutOfBound(leftCoord) && (safe.find(leftCoord) != safe.end() ||
-        danger.find(leftCoord) == danger.end()) && visited.find(leftCoord) == visited.end()) {
-        result.insert(LEFT);
-    }
-    if (!coordinateIsOutOfBound(downCoord) && (safe.find(downCoord) != safe.end() ||
-        danger.find(downCoord) == danger.end()) && visited.find(downCoord) == visited.end()) {
-        result.insert(DOWN);
+    for (auto direction : allDirections) {
+        auto coord = getNextCoordinate(position, direction);
+        if (!coordinateIsOutOfBound(coord) && (safe.find(coord) != safe.end() ||
+            danger.find(coord) == danger.end()) && visited.find(coord) == visited.end()) {
+            result.insert(direction);
+        }
     }
     return result;
 }

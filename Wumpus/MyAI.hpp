@@ -69,15 +69,16 @@ public:
     Direction getNewDirection (Direction& current, Action& action);
     std::pair<int, int> getNextCoordinate (const std::pair<int, int>& current, Direction direction);
     bool isFacingWumpus ();
+    void getWumpusPosition ();
     
     void markNearbySafe ();
     void markNearbyDanger ();
-    std::set<Direction> getValidDirections ();
+    std::set<Direction> getValidDirections (std::pair<int, int>& position);
     void adjustDirectionAndMove (Direction direction);
     void moveBack ();
     Direction getDirectionToTargetPosition(std::pair<int, int>& target);
     
-    
+    std::vector<Direction> allDirections = {UP,DOWN,LEFT,RIGHT};
     // ======================================================================
     // YOUR CODE ENDS
     // ======================================================================
